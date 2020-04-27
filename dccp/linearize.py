@@ -22,12 +22,12 @@ def linearize_para(expr):
             for d in range(var.shape[1]):
                 g = cvx.Parameter(var.shape[0],expr.shape[0])
                 # g = g.T
-                linear_expr += g.T * (var[:,d] - value_para[:,d]) # first order
+                linear_expr += g.T @ (var[:,d] - value_para[:,d]) # first order
                 gr.append(g)
             linear_dictionary[var] = [value_para, gr]
         else: # vector to vector
             g = cvx.Parameter(var.shape[0],expr.shape[0])
-            linear_expr += g.T * (var[:,d] - value_para[:,d]) # first order
+            linear_expr += g.T @ (var[:,d] - value_para[:,d]) # first order
             gr.append(g)
         linear_dictionary[var] = [value_para, gr]
     dom = expr.domain
@@ -59,8 +59,8 @@ def linearize(expr):
                 return None
             if var.ndim > 1:
                 temp = cvx.reshape(cvx.vec(var - var.value), (var.shape[0] * var.shape[1], 1))
-                flattened = np.transpose(grad_map[var]) * temp
+                flattened = np.transpose(grad_map[var]) @ temp
                 tangent = tangent + cvx.reshape(flattened, expr.shape)
             else:
-                tangent = tangent + np.transpose(grad_map[var])*(var - var.value)
+                tangent = tangent + np.transpose(grad_map[var]) @ (var - var.value)
         return tangent
